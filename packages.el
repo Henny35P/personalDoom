@@ -55,3 +55,4 @@
 (package! aggressive-indent)
 (package! org-modern )
 (package! org-roam-ui)
+(package! chatgpt-shell)

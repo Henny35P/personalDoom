@@ -146,6 +146,7 @@
       :map evilem-map
       :desc "jump to char" "f" #'evil-avy-goto-char)
 
+
 (setf mouse-wheel-scroll-amount '(3 ((shift) . 3))
       mouse-wheel-progressive-speed nil
       mouse-wheel-follow-mouse t
@@ -324,3 +325,21 @@
   (interactive)
   (let ((default-directory org-roam-directory))
     (consult-ripgrep)))
+
+;; Deft config
+(setq deft-directory "~/org")
+;; Disable "look" process on mac
+(add-hook 'org-mode-hook(lambda () ( company-mode -1)))
+(setq company-ispell-available nil)
+
+(use-package chatgpt-shell
+  :ensure t
+  :custom
+  ((chatgpt-shell-openai-key
+    (lambda ()
+      (auth-source-pass-get 'secret "openai-key")))))
+
+
+;; Get API Key from Mac Keychain or from .authinfo
+(setq chatgpt-shell-openai-key
+      (auth-source-pick-first-password :host "api.openai.com"))
