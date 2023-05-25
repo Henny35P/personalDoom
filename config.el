@@ -77,6 +77,8 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
+
+;; Better defaults for Emacs
 (setq-default
  delete-by-moving-to-trash t                      ; delete files to trash
  window-combination-resize t                      ; take new windowspace from all other windows (not just current)
@@ -89,23 +91,25 @@
       password-cache-expiry nil                   ; i can trust my computers ... can't i?
       ;; scroll-preserve-screen-position 'always     ; don't have `point' jump around
       scroll-margin 2)                            ; it's nice to maintain a little margin
-
 (display-time-mode 1)                             ; enable time in the mode-line
 
+
+;; Show battery percenTage
 (unless (string-match-p "^power n/a" (battery))   ; on laptops...
   (display-battery-mode 1))                       ; it's nice to know how much power you have
+                                        ; iterate through camelcase words
+(global-subword-mode 1)
 
-(global-subword-mode 1)                           ; iterate through camelcase words
-
+;; Default window split
 (setq evil-vsplit-window-right t
       evil-split-window-below t)
 
+;; Select buffer to split
 (defadvice! prompt-for-buffer (&rest _)
   :after '(evil-window-split evil-window-vsplit)
   (consult-buffer))
 
-
-
+;; Change bindings for moving windows
 (map! :map evil-window-map
       "SPC" #'rotate-layout
       ;; navigation
@@ -118,35 +122,20 @@
       "C-<down>"       #'+evil/window-move-down
       "C-<up>"         #'+evil/window-move-up
       "C-<right>"      #'+evil/window-move-right)
-
-
-
-(map! :map evil-window-map
-      "SPC" #'rotate-layout
-      ;; navigation
-      "<left>"     #'evil-window-left
-      "<down>"     #'evil-window-down
-      "<up>"       #'evil-window-up
-      "<right>"    #'evil-window-right
-      ;; swapping windows
-      "C-<left>"       #'+evil/window-move-left
-      "C-<down>"       #'+evil/window-move-down
-      "C-<up>"         #'+evil/window-move-up
-      "C-<right>"      #'+evil/window-move-right)
-
 
 (defun meain/evil-delete-advice (orig-fn beg end &optional type _ &rest args)
   "make d, c, x to not write to clipboard."
   (apply orig-fn beg end type ?_ args))
-
 (advice-add 'evil-delete :around 'meain/evil-delete-advice)
 (advice-add 'evil-change :around 'meain/evil-delete-advice)
 
+;; Better jump with gsf
 (map! :after evil-easymotion
       :map evilem-map
       :desc "jump to char" "f" #'evil-avy-goto-char)
 
 
+;; Scrolling with mouse
 (setf mouse-wheel-scroll-amount '(3 ((shift) . 3))
       mouse-wheel-progressive-speed nil
       mouse-wheel-follow-mouse t
@@ -154,17 +143,31 @@
       scroll-conservatively 100
       disabled-command-function nil)
 
-(setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 16)
-      doom-big-font (font-spec :family "JetBrainsMono Nerd Font" :size 24)
-      doom-variable-pitch-font (font-spec :family "JetBrainsMono Nerd Font" :size 12)
-      doom-unicode-font (font-spec :family "Ubuntu Mono Font")
-      doom-serif-font (font-spec :family "Iosevka Nerd Font" :weight 'light))
 
+
+;; Set font depending on OS
+(cond
+ ((string-equal system-type "gnu/linux")
+  (setq doom-font (font-spec :family "JetBrains Mono" :size 16)
+        doom-big-font (font-spec :family "JetBrains Mono" :size 24)
+        doom-variable-pitch-font (font-spec :family "JetBrains Mono" :size 12)
+        doom-unicode-font (font-spec :family "Julia Mono")
+        doom-serif-font (font-spec :family "Alegreya" :weight 'light)))
+ ((string-equal system-type "darwin")
+  (setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 16)
+        doom-big-font (font-spec :family "JetBrainsMono Nerd Font" :size 24)
+        doom-variable-pitch-font (font-spec :family "JetBrainsMono Nerd Font" :size 12)
+        doom-unicode-font (font-spec :family "Ubuntu Mono Font")
+        doom-serif-font (font-spec :family "Iosevka Nerd Font" :weight 'light))
+  )
+ )
+
+;; indent-guides
 (setq highlight-indent-guides-method 'column)
 
 
+;; Which-key configuraiton
 (setq which-key-idle-delay 0.5) ;; i need the help, i really do
-
 (setq which-key-allow-multiple-replacements t)
 (after! which-key
   (pushnew!
@@ -173,12 +176,14 @@
    '(("\\`g s" . "\\`evilem--?motion-\\(.*\\)") . (nil . "◃\\1"))
    ))
 
+;; Evil configuration
 (after! evil
   (setq evil-ex-substitute-global t     ; i like my s/../.. to by global by default
         evil-move-cursor-back nil       ; don't move the block cursor when toggling insert mode
         evil-kill-on-visual-paste nil)) ; don't put overwritten text in the kill ring
 
-;; (set-company-backend! 'ess-r-mode '(company-r-args company-r-objects company-dabbrev-code :separate))
+
+;; Org-modern configuration, makes orgmode look pretty
 (use-package! info-colors
   :commands (info-colors-fontify-node))
 
@@ -192,7 +197,7 @@
 (scroll-bar-mode -1)
 ;; (modus-themes-load-operandi)
 
-;; Choose some fonts
+;; Choose some fonts in case you don't like using the same for coding
 ;; (set-face-attribute 'default nil :family "Iosevka")
 ;; (set-face-attribute 'variable-pitch nil :family "Iosevka Aile")
 ;; (set-face-attribute 'org-modern-symbol nil :family "Iosevka")
@@ -291,10 +296,9 @@
           ("caption" . "☰")
           ("RESULTS" . "🠶")))
   (custom-set-faces! '(org-modern-statistics :inherit org-checkbox-statistics-todo)))
-
 (global-org-modern-mode)
 
-
+;; Set org-roam directory
 (setq org-roam-directory "~/org/")
 (defadvice! doom-modeline--buffer-file-name-roam-aware-a (orig-fun)
   :around #'doom-modeline-buffer-file-name ; takes no args
@@ -304,34 +308,39 @@
        "🢔(\\1-\\2-\\3) "
        (subst-char-in-string ?_ ?  buffer-file-name))
     (funcall orig-fun)))
-
+;; Org-roam-ui setup
+;; Websocket for local server
 (use-package! websocket
-    :after org-roam)
-
+  :after org-roam)
+;; roam-ui configuration
 (use-package! org-roam-ui
-    :after org-roam ;; or :after org
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-;;  :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
-
+  :after org-roam
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
+;; Replacement for Deft
 (defun org-roam-rg ()
   "Ripgrep into org-roam-directory"
   (interactive)
   (let ((default-directory org-roam-directory))
     (consult-ripgrep)))
 
-;; Deft config
+;; Deft directory
+;; Will be disabled if org-roam-rg proves to work
 (setq deft-directory "~/org")
-;; Disable "look" process on mac
-(add-hook 'org-mode-hook(lambda () ( company-mode -1)))
-(setq company-ispell-available nil)
 
+;; Disable "look" process on mac because it keeps freezing emacs
+;;
+(cond
+ (string-equal system-type "darwin")
+ (add-hook 'org-mode-hook(lambda () ( company-mode -1)))
+ (setq company-ispell-available nil)
+ )
+
+
+;; Use chatgpt shell
 (use-package chatgpt-shell
   :ensure t
   :custom
@@ -341,5 +350,7 @@
 
 
 ;; Get API Key from Mac Keychain or from .authinfo
+;; If you're using .authinfo it should be like this
+;; machine api.openai.com password YOURAPIKEYHERE
 (setq chatgpt-shell-openai-key
       (auth-source-pick-first-password :host "api.openai.com"))
