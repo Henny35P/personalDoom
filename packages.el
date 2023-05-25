@@ -56,3 +56,5 @@
 (package! org-modern )
 (package! org-roam-ui)
 (package! chatgpt-shell)
+(package! copilot
+  :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))

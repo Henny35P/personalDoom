@@ -334,10 +334,11 @@
 ;; Disable "look" process on mac because it keeps freezing emacs
 ;;
 (cond
- (string-equal system-type "darwin")
+ ((string-equal system-type "darwin")
  (add-hook 'org-mode-hook(lambda () ( company-mode -1)))
  (setq company-ispell-available nil)
  )
+)
 
 
 ;; Use chatgpt shell
@@ -352,5 +353,19 @@
 ;; Get API Key from Mac Keychain or from .authinfo
 ;; If you're using .authinfo it should be like this
 ;; machine api.openai.com password YOURAPIKEYHERE
+;; And here's how to setup gpg https://github.com/daviwil/emacs-from-scratch/blob/master/show-notes/Emacs-Tips-Pass.org
 (setq chatgpt-shell-openai-key
       (auth-source-pick-first-password :host "api.openai.com"))
+
+
+;; Copilot.el configuration
+;; accept completion from copilot and fallback to company
+;; use copilot-login if it's your first time using it
+;;
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :bind (:map copilot-completion-map
+              ("<tab>" . 'copilot-accept-completion)
+              ("TAB" . 'copilot-accept-completion)
+              ("C-TAB" . 'copilot-accept-completion-by-word)
+              ("C-<tab>" . 'copilot-accept-completion-by-word)))
